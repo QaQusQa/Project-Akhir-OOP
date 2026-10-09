@@ -18,6 +18,9 @@ protected:
   int rating;
 
 public:
+  virtual ~GAME() = default;
+  virtual string getPlatform() const = 0;
+
   void setName(string &game_name);
   void setPrice(float &game_price);
   void setRating(int &rating);
@@ -28,15 +31,18 @@ public:
 };
 
 class PCGAME : public GAME {
-  enum launcher launch = PC;
+public:
+  string getPlatform() const override;
 };
 
 class MobileGAME : public GAME {
-  enum launcher launch = Mobile;
+public:
+  string getPlatform() const override;
 };
 
 class ConsoleGAME : public GAME {
-  enum launcher launch = Console;
+public:
+  string getPlatform() const override;
 };
 
 #endif

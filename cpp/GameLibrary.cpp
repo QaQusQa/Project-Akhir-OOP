@@ -1,4 +1,5 @@
 #include "../include/GameLibrary.h"
+#include <stdexcept>
 
 using namespace std;
 
@@ -15,18 +16,16 @@ unique_ptr<GAME> GameLibrary::createGame(launcher platform) const {
 }
 
 void GameLibrary::addGame(const string &name, launcher platform) {
-  if (name.find_first_not_of(" \t\r\n") == string::npos) return;
   unique_ptr<GAME> game = createGame(platform);
-  if (!game) return;
+  if (!game) throw std::invalid_argument("Platform tidak valid.");
   game->setName(name);
   games.push_back(std::move(game));
 }
 
 void GameLibrary::editGame(int index, const string &name, launcher platform) {
   if (index < 0 || index >= static_cast<int>(games.size())) return;
-  if (name.find_first_not_of(" \t\r\n") == string::npos) return;
   unique_ptr<GAME> game = createGame(platform);
-  if (!game) return;
+  if (!game) throw std::invalid_argument("Platform tidak valid.");
   // Pertahankan data game lama saat platform diganti.
   static_cast<GAME &>(*game) = *games[index];
   game->setName(name);
@@ -47,14 +46,17 @@ vector<string> GameLibrary::showGames() const {
 }
 
 void GameLibrary::updateDetails(int index, float price, int rating, string description) {
-  if (!getGame(index) || price < 0 || rating < 0 || rating > 10) return;
-  games[index]->setPrice(price);
-  games[index]->setRating(rating);
-  games[index]->setDescription(description);
+  if (!getGame(index)) return;
+  auto updated = createGame(PC);
+  static_cast<GAME &>(*updated) = *games[index];
+  updated->setPrice(price);
+  updated->setRating(rating);
+  updated->setDescription(description);
+  static_cast<GAME &>(*games[index]) = *updated;
 }
 
-void GameLibrary::addPlayTime(int index, float hours) {
-  if (getGame(index)) games[index]->addPlayTime(hours);
+void GameLibrary::calcPlayTime(int index, float hours) {
+  if (getGame(index)) games[index]->calcPlayTime(hours);
 }
 
 void GameLibrary::addAchievement(int index, string achievement) {

@@ -1,5 +1,6 @@
 #include "../include/GameLibrary.h"
 #include <QApplication>
+#include <stdexcept>
 #include <QComboBox>
 #include <QDialog>
 #include <QDialogButtonBox>
@@ -138,8 +139,7 @@ int main(int argc, char *argv[]) {
     QHBoxLayout achievementRow;
     achievementRow.addWidget(&achievement);
     achievementRow.addWidget(&addAchievement);
-    float pendingHours = 0;
-    std::vector<std::string> pendingAchievements;
+    PCGAME pending;
 
     if (game) {
       name.setText(QString::fromStdString(game->getName()));
@@ -157,14 +157,20 @@ int main(int argc, char *argv[]) {
     }
 
     QObject::connect(&addTime, &QPushButton::clicked, [&]() {
-      pendingHours += static_cast<float>(extraTime.value());
-      totalTime.setText(QString::number(game->getPlayTime() + pendingHours) + " jam");
+      float hours = static_cast<float>(extraTime.value());
+      pending.calcPlayTime(hours);
+      totalTime.setText(QString::number(game->getPlayTime() + pending.getPlayTime()) + " jam");
       extraTime.setValue(0);
     });
     QObject::connect(&addAchievement, &QPushButton::clicked, [&]() {
       QString text = achievement.text().trimmed();
-      if (text.isEmpty()) return;
-      pendingAchievements.push_back(text.toStdString());
+      auto value = text.toStdString();
+      try {
+        pending.addAchievement(value);
+      } catch (const std::invalid_argument &error) {
+        QMessageBox::information(&dialog, "Achievement", error.what());
+        return;
+      }
       achievements.addItem(text);
       achievement.clear();
     });
@@ -173,25 +179,30 @@ int main(int argc, char *argv[]) {
     form.addRow(&buttons);
     QObject::connect(&buttons, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
     QObject::connect(&buttons, &QDialogButtonBox::accepted, [&]() {
-      if (name.text().trimmed().isEmpty()) {
-        QMessageBox::information(&dialog, "Nama game", "Nama game harus diisi.");
-        return;
+      try {
+        auto gameName = name.text().trimmed().toStdString();
+        auto selectedPlatform = static_cast<launcher>(platform.currentIndex());
+        // Validasi melalui setter sebelum menyimpan perubahan.
+        PCGAME details;
+        details.setName(gameName);
+        float cost = static_cast<float>(price.value());
+        int score = rating.value();
+        details.setPrice(cost);
+        details.setRating(score);
+        if (game) library.editGame(index, gameName, selectedPlatform);
+        else {
+          index = static_cast<int>(library.showGames().size());
+          library.addGame(gameName, selectedPlatform);
+        }
+        library.updateDetails(index, cost, score, description.toPlainText().toStdString());
+        library.calcPlayTime(index, pending.getPlayTime());
+        for (const auto &item : pending.getAchievements()) library.addAchievement(index, item);
+        dialog.accept();
+      } catch (const std::invalid_argument &error) {
+        QMessageBox::information(&dialog, "Dữ liệu không hợp lệ", error.what());
       }
-      dialog.accept();
     });
     if (dialog.exec() != QDialog::Accepted) return;
-
-    auto gameName = name.text().trimmed().toStdString();
-    auto selectedPlatform = static_cast<launcher>(platform.currentIndex());
-    if (game) library.editGame(index, gameName, selectedPlatform);
-    else {
-      index = static_cast<int>(library.showGames().size());
-      library.addGame(gameName, selectedPlatform);
-    }
-    library.updateDetails(index, static_cast<float>(price.value()), rating.value(),
-                          description.toPlainText().toStdString());
-    library.addPlayTime(index, pendingHours);
-    for (const auto &item : pendingAchievements) library.addAchievement(index, item);
     refresh();
   };
 

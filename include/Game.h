@@ -34,7 +34,6 @@ public:
   void setDescription(string &desc);
 
   float calcPlayTime(float &detected_time);
-  void addPlayTime(float hours);
   int addAchievement(string &achivement);
 };
 

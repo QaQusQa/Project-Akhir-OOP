@@ -46,6 +46,21 @@ vector<string> GameLibrary::showGames() const {
   return gameNames;
 }
 
+void GameLibrary::updateDetails(int index, float price, int rating, string description) {
+  if (!getGame(index) || price < 0 || rating < 0 || rating > 10) return;
+  games[index]->setPrice(price);
+  games[index]->setRating(rating);
+  games[index]->setDescription(description);
+}
+
+void GameLibrary::addPlayTime(int index, float hours) {
+  if (getGame(index)) games[index]->addPlayTime(hours);
+}
+
+void GameLibrary::addAchievement(int index, string achievement) {
+  if (getGame(index)) games[index]->addAchievement(achievement);
+}
+
 const GAME *GameLibrary::getGame(int index) const {
   if (index < 0 || index >= static_cast<int>(games.size())) return nullptr;
   return games[index].get();

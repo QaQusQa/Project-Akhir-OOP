@@ -13,6 +13,11 @@ float GAME::calcPlayTime(float &detected_time) {
   return play_time;
 }
 int GAME::addAchievement(string &achivement) {
-  achivements = achivement;
+  if (achivement.find_first_not_of(" \t\r\n") == string::npos) return 0;
+  achievements.push_back(achivement);
   return 1;
+}
+
+void GAME::addPlayTime(float hours) {
+  if (hours > 0) play_time += hours;
 }

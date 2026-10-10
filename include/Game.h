@@ -2,6 +2,7 @@
 #define GAME_H
 
 #include <string>
+#include <vector>
 
 using namespace std;
 
@@ -11,7 +12,7 @@ class GAME {
   string name;
   float price = 0;
   float play_time = 0;
-  string achivements;
+  vector<string> achievements;
 
 protected:
   string description;
@@ -22,12 +23,18 @@ public:
   virtual string getPlatform() const = 0;
 
   const string &getName() const { return name; }
+  float getPrice() const { return price; }
+  float getPlayTime() const { return play_time; }
+  int getRating() const { return rating; }
+  const string &getDescription() const { return description; }
+  const vector<string> &getAchievements() const { return achievements; }
   void setName(const string &game_name);
   void setPrice(float &game_price);
   void setRating(int &rating);
   void setDescription(string &desc);
 
   float calcPlayTime(float &detected_time);
+  void addPlayTime(float hours);
   int addAchievement(string &achivement);
 };
 

@@ -10,8 +10,10 @@ class GameLibrary {
   std::unique_ptr<GAME> createGame(launcher platform) const;
 
 public:
-  void addGame(const std::string &name, launcher platform);
-  void editGame(int index, const std::string &name, launcher platform);
+  void addGame(const std::string &name, launcher platform,
+               const std::string &launchTarget = "");
+  void editGame(int index, const std::string &name, launcher platform,
+               const std::string &launchTarget = "");
   void deleteGame(int index);
   void updateDetails(int index, float price, int rating, std::string description);
   void calcPlayTime(int index, float hours);

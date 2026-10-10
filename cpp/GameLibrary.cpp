@@ -15,20 +15,23 @@ unique_ptr<GAME> GameLibrary::createGame(launcher platform) const {
   return nullptr;
 }
 
-void GameLibrary::addGame(const string &name, launcher platform) {
+void GameLibrary::addGame(const string &name, launcher platform, const string &launchTarget) {
   unique_ptr<GAME> game = createGame(platform);
   if (!game) throw std::invalid_argument("Platform tidak valid.");
   game->setName(name);
+  if (!launchTarget.empty()) game->setLaunchTarget(launchTarget);
   games.push_back(std::move(game));
 }
 
-void GameLibrary::editGame(int index, const string &name, launcher platform) {
+void GameLibrary::editGame(int index, const string &name, launcher platform, const string &launchTarget) {
   if (index < 0 || index >= static_cast<int>(games.size())) return;
   unique_ptr<GAME> game = createGame(platform);
   if (!game) throw std::invalid_argument("Platform tidak valid.");
-  // Pertahankan data game lama saat platform diganti.
+  if (launchTarget.empty() && game->getPlatform() == games[index]->getPlatform())
+    game->setLaunchTarget(games[index]->getLaunchTarget());
   static_cast<GAME &>(*game) = *games[index];
   game->setName(name);
+  if (!launchTarget.empty()) game->setLaunchTarget(launchTarget);
   games[index] = std::move(game);
 }
 

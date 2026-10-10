@@ -21,6 +21,9 @@ protected:
 public:
   virtual ~GAME() = default;
   virtual string getPlatform() const = 0;
+  virtual string getLaunchInstructions() const = 0;
+  virtual const string &getLaunchTarget() const = 0;
+  virtual void setLaunchTarget(const string &target) = 0;
 
   const string &getName() const { return name; }
   float getPrice() const { return price; }
@@ -38,18 +41,33 @@ public:
 };
 
 class PCGAME : public GAME {
+  string pcLauncher = "Steam";
+
 public:
   string getPlatform() const override;
+  string getLaunchInstructions() const override;
+  const string &getLaunchTarget() const override { return pcLauncher; }
+  void setLaunchTarget(const string &target) override;
 };
 
 class MobileGAME : public GAME {
+  string operatingSystem = "Android";
+
 public:
   string getPlatform() const override;
+  string getLaunchInstructions() const override;
+  const string &getLaunchTarget() const override { return operatingSystem; }
+  void setLaunchTarget(const string &target) override;
 };
 
 class ConsoleGAME : public GAME {
+  string consoleName = "PlayStation 5";
+
 public:
   string getPlatform() const override;
+  string getLaunchInstructions() const override;
+  const string &getLaunchTarget() const override { return consoleName; }
+  void setLaunchTarget(const string &target) override;
 };
 
 #endif

@@ -35,3 +35,30 @@ int GAME::addAchievement(string &achivement) {
   achievements.push_back(achivement);
   return 1;
 }
+
+void PCGAME::setLaunchTarget(const string &target) {
+  if (target.find_first_not_of(" \t\r\n") == string::npos)
+    throw std::invalid_argument("Launcher PC harus diisi.");
+  pcLauncher = target;
+}
+string PCGAME::getLaunchInstructions() const {
+  return "Buka " + pcLauncher + " di PC, pilih " + getName() + ", lalu klik Play.";
+}
+
+void MobileGAME::setLaunchTarget(const string &target) {
+  if (target.find_first_not_of(" \t\r\n") == string::npos)
+    throw std::invalid_argument("OS Mobile harus diisi.");
+  operatingSystem = target;
+}
+string MobileGAME::getLaunchInstructions() const {
+  return "Pada perangkat " + operatingSystem + ", ketuk ikon aplikasi " + getName() + ".";
+}
+
+void ConsoleGAME::setLaunchTarget(const string &target) {
+  if (target.find_first_not_of(" \t\r\n") == string::npos)
+    throw std::invalid_argument("Nama konsol harus diisi.");
+  consoleName = target;
+}
+string ConsoleGAME::getLaunchInstructions() const {
+  return "Nyalakan " + consoleName + ", pilih " + getName() + " dari library, lalu jalankan dengan controller.";
+}

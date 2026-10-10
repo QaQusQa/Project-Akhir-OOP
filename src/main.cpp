@@ -108,6 +108,18 @@ int main(int argc, char *argv[]) {
     name.setPlaceholderText("Nama game");
     QComboBox platform;
     platform.addItems({"PC", "Mobile", "Console"});
+    QLineEdit launchTarget;
+    QLabel launchLabel;
+    auto updateLaunchField = [&]() {
+      QStringList labels = {"Launcher PC", "OS Mobile", "Nama Konsol"};
+      QStringList defaults = {"Steam", "Android", "PlayStation 5"};
+      launchLabel.setText(labels[platform.currentIndex()]);
+      if (game && platform.currentText() == QString::fromStdString(game->getPlatform()))
+        launchTarget.setText(QString::fromStdString(game->getLaunchTarget()));
+      else launchTarget.setText(defaults[platform.currentIndex()]);
+    };
+    QObject::connect(&platform, &QComboBox::currentIndexChanged, [&]() { updateLaunchField(); });
+    updateLaunchField();
     QDoubleSpinBox price;
     price.setRange(0, 1000000000);
     price.setPrefix("Rp ");
@@ -119,6 +131,7 @@ int main(int argc, char *argv[]) {
     description.setMaximumHeight(80);
     form.addRow("Nama", &name);
     form.addRow("Platform", &platform);
+    form.addRow(&launchLabel, &launchTarget);
     form.addRow("Harga", &price);
     form.addRow("Rating", &rating);
     form.addRow("Deskripsi", &description);
@@ -185,21 +198,22 @@ int main(int argc, char *argv[]) {
         // Validasi melalui setter sebelum menyimpan perubahan.
         PCGAME details;
         details.setName(gameName);
+        details.setLaunchTarget(launchTarget.text().trimmed().toStdString());
         float cost = static_cast<float>(price.value());
         int score = rating.value();
         details.setPrice(cost);
         details.setRating(score);
-        if (game) library.editGame(index, gameName, selectedPlatform);
+        if (game) library.editGame(index, gameName, selectedPlatform, launchTarget.text().trimmed().toStdString());
         else {
           index = static_cast<int>(library.showGames().size());
-          library.addGame(gameName, selectedPlatform);
+          library.addGame(gameName, selectedPlatform, launchTarget.text().trimmed().toStdString());
         }
         library.updateDetails(index, cost, score, description.toPlainText().toStdString());
         library.calcPlayTime(index, pending.getPlayTime());
         for (const auto &item : pending.getAchievements()) library.addAchievement(index, item);
         dialog.accept();
       } catch (const std::invalid_argument &error) {
-        QMessageBox::information(&dialog, "Dữ liệu không hợp lệ", error.what());
+        QMessageBox::information(&dialog, "Data tidak valid", error.what());
       }
     });
     if (dialog.exec() != QDialog::Accepted) return;
@@ -244,6 +258,9 @@ int main(int argc, char *argv[]) {
     form.addRow("Harga", &price);
     form.addRow("Rating", &rating);
     form.addRow("Waktu bermain", &time);
+    QLabel instructions(QString::fromStdString(game->getLaunchInstructions()));
+    instructions.setWordWrap(true);
+    form.addRow("Cara menjalankan", &instructions);
     form.addRow("Deskripsi", &description);
     form.addRow("Achievement", &achievements);
     QDialogButtonBox buttons(QDialogButtonBox::Close);

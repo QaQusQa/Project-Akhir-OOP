@@ -9,19 +9,20 @@ enum launcher { PC, Mobile, Console };
 
 class GAME {
   string name;
-  float price;
-  float play_time;
+  float price = 0;
+  float play_time = 0;
   string achivements;
 
 protected:
   string description;
-  int rating;
+  int rating = 0;
 
 public:
   virtual ~GAME() = default;
   virtual string getPlatform() const = 0;
 
-  void setName(string &game_name);
+  const string &getName() const { return name; }
+  void setName(const string &game_name);
   void setPrice(float &game_price);
   void setRating(int &rating);
   void setDescription(string &desc);

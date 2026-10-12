@@ -315,9 +315,4 @@ int main(int argc, char *argv[]) {
   QObject::connect(&exit, &QPushButton::clicked, &window, &QWidget::close);
   window.show();
   return app.exec();
-<<<<<<< HEAD
-  
 }
-=======
-}
->>>>>>> qaqa

@@ -55,9 +55,9 @@ bool STORAGE::loadGames(vector<unique_ptr<GAME>> &games) {
     unique_ptr<GAME> game;
     if (platform == "PC")
       game = make_unique<PCGAME>();
-    if (platform == "Mobile")
+    else if (platform == "Mobile")
       game = make_unique<MobileGAME>();
-    if (platform == "Console")
+    else if (platform == "Console")
       game = make_unique<ConsoleGAME>();
     else
       continue;

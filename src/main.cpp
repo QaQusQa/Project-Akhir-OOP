@@ -1,4 +1,5 @@
 #include "../include/GameLibrary.h"
+#include <QFile>
 #include <QApplication>
 #include <stdexcept>
 #include <QComboBox>
@@ -19,26 +20,24 @@
 #include <QVBoxLayout>
 
 int main(int argc, char *argv[]) {
+
   QApplication app(argc, argv);
+
+  QFile styleFile("style.qss");
+  if (!styleFile.exists()) {
+    styleFile.setFileName("../style.qss");
+  }
+  if (styleFile.open(QFile::ReadOnly) | QFile::Text) {
+    app.setStyleSheet(QString::fromUtf8(styleFile.readAll()));
+    styleFile.close();
+  } 
+
   GameLibrary library;
   QWidget window;
   window.setWindowTitle("Game Library");
   window.resize(500, 400);
   window.setMinimumSize(460, 380);
-  window.setStyleSheet(
-      "QWidget { background-color: #f5f6f8; color: #263244; }"
-      "QPushButton { background-color: white; border: 1px solid #cbd2dc;"
-      " border-radius: 6px; padding: 8px 16px; }"
-      "QPushButton:hover { background-color: #e8eef7; }"
-      "QPushButton:pressed { background-color: #d8e3f3; }"
-      "QPushButton:disabled { color: #929aa5; background-color: #eceef1; }"
-      "QPushButton#add { background-color: #386bc0; color: white; border-color: #386bc0; }"
-      "QPushButton#add:hover { background-color: #2d58a0; }"
-      "QLineEdit, QTextEdit, QListWidget, QComboBox, QSpinBox, QDoubleSpinBox {"
-      " background-color: white; border: 1px solid #cbd2dc; border-radius: 4px; padding: 5px; }"
-      "QListWidget::item { padding: 7px; }"
-      "QListWidget::item:selected { background-color: #dce8fa; color: #263244; }"
-  );
+
   QVBoxLayout layout(&window);
   layout.setContentsMargins(24, 16, 24, 24);
   layout.setSpacing(14);

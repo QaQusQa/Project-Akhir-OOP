@@ -11,6 +11,7 @@ add_executable(project-akhir
   src/main.cpp
   cpp/Game.cpp
   cpp/GameLibrary.cpp
+  cpp/Storage.cpp
 )
 
 target_link_libraries(project-akhir PRIVATE Qt6::Widgets)

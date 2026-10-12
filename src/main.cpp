@@ -24,7 +24,10 @@ int main(int argc, char *argv[]) {
 
   QApplication app(argc, argv);
 
-  QFile styleFile(":/style.qss");
+  QFile styleFile("style.qss");
+  if (!styleFile.exists()) {
+    styleFile.setFileName("../style.qss");
+  }
   if (styleFile.open(QFile::ReadOnly | QFile::Text)) {
     app.setStyleSheet(QString::fromUtf8(styleFile.readAll()));
     styleFile.close();

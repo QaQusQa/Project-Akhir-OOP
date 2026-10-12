@@ -4,12 +4,10 @@ project(project-akhir VERSION 0.1.0 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-set(CMAKE_AUTORCC ON)
 
 find_package(Qt6 REQUIRED COMPONENTS Widgets)
 
 add_executable(project-akhir
-  resources.qrc
   src/main.cpp
   cpp/Game.cpp
   cpp/GameLibrary.cpp

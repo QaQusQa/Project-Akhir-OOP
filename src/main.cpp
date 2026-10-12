@@ -24,69 +24,110 @@ int main(int argc, char *argv[]) {
 
   QApplication app(argc, argv);
 
-  QFile styleFile("style.qss");
-  if (!styleFile.exists()) {
-    styleFile.setFileName("../style.qss");
-  }
-  if (styleFile.open(QFile::ReadOnly) | QFile::Text) {
+  QFile styleFile(":/style.qss");
+  if (styleFile.open(QFile::ReadOnly | QFile::Text)) {
     app.setStyleSheet(QString::fromUtf8(styleFile.readAll()));
     styleFile.close();
   } 
 
   GameLibrary library;
   QWidget window;
-  window.setWindowTitle("Game Library");
-  window.resize(500, 400);
-  window.setMinimumSize(460, 380);
+  app.setApplicationName("Uap");
+  window.setWindowTitle("Uap — Koleksi Game");
+  window.resize(1000, 680);
+  window.setMinimumSize(760, 540);
 
   QVBoxLayout layout(&window);
-  layout.setContentsMargins(24, 16, 24, 24);
-  layout.setSpacing(14);
-  QLabel title("Game Library");
+  layout.setContentsMargins(24, 20, 24, 20);
+  layout.setSpacing(20);
+  QHBoxLayout header;
+  QLabel title("◉  UAP");
+  title.setObjectName("title");
   QFont titleFont = title.font();
   titleFont.setPointSize(24);
   titleFont.setBold(true);
   title.setFont(titleFont);
-  title.setAlignment(Qt::AlignCenter);
-  layout.addSpacing(30);
-  layout.addWidget(&title);
+  header.addWidget(&title);
+  header.addSpacing(28);
+  QPushButton homeNav("BERANDA"), libraryNav("KOLEKSI");
+  homeNav.setObjectName("navigation");
+  libraryNav.setObjectName("navigation");
+  homeNav.setCheckable(true);
+  libraryNav.setCheckable(true);
+  homeNav.setChecked(true);
+  header.addWidget(&homeNav);
+  header.addWidget(&libraryNav);
+  header.addStretch();
+  layout.addLayout(&header);
   QStackedWidget pages;
   layout.addWidget(&pages);
 
   QWidget home;
   QVBoxLayout menu(&home);
-  menu.setContentsMargins(65, 0, 65, 0);
-  menu.setSpacing(12);
-  QPushButton add("Add Game"), show("Show Games"), exit("Keluar");
+  home.setObjectName("hero");
+  menu.setContentsMargins(40, 32, 40, 32);
+  menu.setSpacing(16);
+  QLabel welcomeTag("SELAMAT DATANG DI UAP");
+  welcomeTag.setObjectName("eyebrow");
+  QLabel welcome("Semua game.\nSatu tempat.");
+  welcome.setObjectName("heroTitle");
+  QLabel intro("Kumpulkan game favoritmu, catat waktu bermain,\ndan simpan setiap pencapaian dalam koleksimu.");
+  intro.setWordWrap(true);
+  intro.setObjectName("heroDescription");
+  QLabel collectionCount;
+  collectionCount.setObjectName("stats");
+  QPushButton add("+  Tambah Game"), show("Buka Koleksi  →"), exit("Keluar dari Uap");
   add.setObjectName("add");
   add.setMinimumHeight(40);
   show.setMinimumHeight(40);
   exit.setMinimumHeight(40);
   menu.addStretch();
-  menu.addWidget(&add);
-  menu.addWidget(&show);
-  menu.addWidget(&exit);
+  menu.addWidget(&welcomeTag);
+  menu.addWidget(&welcome);
+  menu.addWidget(&intro);
+  menu.addWidget(&collectionCount);
+  QHBoxLayout heroActions;
+  heroActions.addWidget(&show);
+  heroActions.addWidget(&add);
+  heroActions.addStretch();
+  menu.addLayout(&heroActions);
   menu.addStretch();
   pages.addWidget(&home);
 
   QWidget collection;
   QVBoxLayout collectionLayout(&collection);
+  collectionLayout.setContentsMargins(0, 0, 0, 0);
+  QLabel collectionTitle("KOLEKSI GAME");
+  collectionTitle.setObjectName("sectionTitle");
   QLabel hint("Double-click untuk info, atau pilih game lalu klik Edit.");
   hint.setWordWrap(true);
   QLineEdit search;
   search.setPlaceholderText("Cari nama game...");
   search.setClearButtonEnabled(true);
   QListWidget list;
-  QPushButton edit("Edit Game"), remove("Delete Game"), back("Kembali");
+  list.setSpacing(4);
+  QPushButton edit("Edit Game"), remove("Hapus Game"), back("← Beranda"), collectionAdd("+  Tambah Game");
+  collectionAdd.setObjectName("add");
+  remove.setObjectName("danger");
   QHBoxLayout actions;
   actions.addWidget(&edit);
   actions.addWidget(&remove);
+  actions.addStretch();
+  actions.addWidget(&collectionAdd);
+  collectionLayout.addWidget(&collectionTitle);
   collectionLayout.addWidget(&hint);
   collectionLayout.addWidget(&search);
   collectionLayout.addWidget(&list);
   collectionLayout.addLayout(&actions);
   collectionLayout.addWidget(&back);
   pages.addWidget(&collection);
+  QHBoxLayout footer;
+  QLabel footerBrand("UAP  /  Koleksi pribadi");
+  footerBrand.setObjectName("eyebrow");
+  footer.addWidget(&footerBrand);
+  footer.addStretch();
+  footer.addWidget(&exit);
+  layout.addLayout(&footer);
 
   auto selectedGameIndex = [&]() {
     const auto *item = list.currentItem();
@@ -97,6 +138,7 @@ int main(int argc, char *argv[]) {
     int selectedIndex = selectedGameIndex();
     const QString query = search.text().trimmed();
     const auto games = library.showGames();
+    collectionCount.setText(QString::number(games.size()) + " GAME DALAM KOLEKSIMU");
     list.clear();
     for (int index = 0; index < static_cast<int>(games.size()); ++index) {
       const GAME *game = library.getGame(index);
@@ -109,6 +151,7 @@ int main(int argc, char *argv[]) {
     if (list.count() > 0 && !list.currentItem()) list.setCurrentRow(0);
     edit.setEnabled(list.count() > 0);
     remove.setEnabled(list.count() > 0);
+    collectionTitle.setText(QString("KOLEKSI GAME  /  %1 dari %2").arg(list.count()).arg(games.size()));
     hint.setText(list.count() ? "Double-click untuk info, atau pilih game lalu klik Edit."
                              : games.empty() ? "Belum ada game. Tambahkan lewat menu utama."
                                              : "Tidak ada game yang cocok dengan pencarian.");
@@ -118,7 +161,7 @@ int main(int argc, char *argv[]) {
   auto gameForm = [&](int index) {
     const GAME *game = library.getGame(index);
     QDialog dialog(&window);
-    dialog.setWindowTitle(game ? "Detail / Edit Game" : "Add Game");
+    dialog.setWindowTitle(game ? "Uap — Edit Game" : "Uap — Tambah Game");
     dialog.resize(400, 300);
     QFormLayout form(&dialog);
     form.setContentsMargins(20, 20, 20, 20);
@@ -257,11 +300,22 @@ int main(int argc, char *argv[]) {
   };
 
   QObject::connect(&add, &QPushButton::clicked, [&]() { gameForm(-1); });
-  QObject::connect(&show, &QPushButton::clicked, [&]() {
+  QObject::connect(&collectionAdd, &QPushButton::clicked, [&]() { gameForm(-1); });
+  auto openCollection = [&]() {
     refresh();
     pages.setCurrentIndex(1);
-  });
-  QObject::connect(&back, &QPushButton::clicked, [&]() { pages.setCurrentIndex(0); });
+    homeNav.setChecked(false);
+    libraryNav.setChecked(true);
+  };
+  auto openHome = [&]() {
+    pages.setCurrentIndex(0);
+    homeNav.setChecked(true);
+    libraryNav.setChecked(false);
+  };
+  QObject::connect(&show, &QPushButton::clicked, openCollection);
+  QObject::connect(&libraryNav, &QPushButton::clicked, openCollection);
+  QObject::connect(&homeNav, &QPushButton::clicked, openHome);
+  QObject::connect(&back, &QPushButton::clicked, openHome);
   QObject::connect(&edit, &QPushButton::clicked, [&]() {
     if (selectedGameIndex() >= 0) gameForm(selectedGameIndex());
   });
@@ -269,7 +323,7 @@ int main(int argc, char *argv[]) {
     const GAME *game = library.getGame(selectedGameIndex());
     if (!game) return;
     QDialog dialog(&window);
-    dialog.setWindowTitle("Info Game");
+    dialog.setWindowTitle("Uap — Info Game");
     dialog.resize(400, 350);
     QFormLayout form(&dialog);
     form.setContentsMargins(20, 20, 20, 20);
@@ -307,12 +361,13 @@ int main(int argc, char *argv[]) {
   QObject::connect(&remove, &QPushButton::clicked, [&]() {
     int index = selectedGameIndex();
     if (index < 0) return;
-    if (QMessageBox::question(&window, "Delete Game", "Hapus game yang dipilih?") == QMessageBox::Yes) {
+    if (QMessageBox::question(&window, "Uap — Hapus Game", "Hapus game yang dipilih?") == QMessageBox::Yes) {
       library.deleteGame(index);
       refresh();
     }
   });
   QObject::connect(&exit, &QPushButton::clicked, &window, &QWidget::close);
+  refresh();
   window.show();
   return app.exec();
 }

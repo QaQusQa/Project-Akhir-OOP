@@ -100,3 +100,77 @@ QListWidget::item:selected {
     color: #ffffff;
     border-left: 3px solid #66c0f4;
 }
+
+/* Identitas Uap dan navigasi utama */
+QLabel#title {
+    color: #ffffff;
+    font-size: 28px;
+    letter-spacing: 3px;
+}
+QPushButton#navigation {
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    color: #b8bfc7;
+    font-size: 16px;
+    font-weight: bold;
+    padding: 12px 4px;
+}
+QPushButton#navigation:hover { color: #ffffff; }
+QPushButton#navigation:checked {
+    color: #66c0f4;
+    border-bottom: 3px solid #1a9fff;
+}
+QWidget#hero {
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
+        stop:0 #263f55, stop:0.6 #1b2b3c, stop:1 #16202d);
+    border: 1px solid #30475b;
+    border-radius: 8px;
+}
+QWidget#hero QLabel { background: transparent; }
+QLabel#heroTitle {
+    color: #ffffff;
+    font-size: 48px;
+    font-weight: bold;
+}
+QLabel#heroDescription {
+    color: #b8cad8;
+    font-size: 16px;
+}
+QLabel#eyebrow {
+    color: #66c0f4;
+    font-size: 11px;
+    font-weight: bold;
+}
+QLabel#stats {
+    color: #8fa9bd;
+    padding: 12px 0;
+    font-size: 12px;
+}
+QLabel#sectionTitle {
+    color: #ffffff;
+    font-size: 20px;
+    font-weight: bold;
+    padding: 8px 0;
+}
+QPushButton#danger:hover {
+    color: #ffb4b4;
+    border-color: #bc6262;
+    background: #402b33;
+}
+QListWidget::item {
+    padding: 16px;
+    font-size: 15px;
+}
+QScrollBar:vertical {
+    background: #10161f;
+    width: 10px;
+    margin: 0;
+}
+QScrollBar::handle:vertical {
+    background: #40566b;
+    min-height: 24px;
+    border-radius: 4px;
+}
+QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical { height: 0; }
+QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical { background: transparent; }

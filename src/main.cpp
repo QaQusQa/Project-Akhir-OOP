@@ -73,28 +73,47 @@ int main(int argc, char *argv[]) {
   QVBoxLayout collectionLayout(&collection);
   QLabel hint("Double-click untuk info, atau pilih game lalu klik Edit.");
   hint.setWordWrap(true);
+  QLineEdit search;
+  search.setPlaceholderText("Cari nama game...");
+  search.setClearButtonEnabled(true);
   QListWidget list;
   QPushButton edit("Edit Game"), remove("Delete Game"), back("Kembali");
   QHBoxLayout actions;
   actions.addWidget(&edit);
   actions.addWidget(&remove);
   collectionLayout.addWidget(&hint);
+  collectionLayout.addWidget(&search);
   collectionLayout.addWidget(&list);
   collectionLayout.addLayout(&actions);
   collectionLayout.addWidget(&back);
   pages.addWidget(&collection);
 
+  auto selectedGameIndex = [&]() {
+    const auto *item = list.currentItem();
+    return item ? item->data(Qt::UserRole).toInt() : -1;
+  };
+
   auto refresh = [&]() {
-    int row = list.currentRow();
+    int selectedIndex = selectedGameIndex();
+    const QString query = search.text().trimmed();
+    const auto games = library.showGames();
     list.clear();
-    for (const auto &game : library.showGames())
-      list.addItem(QString::fromStdString(game));
-    if (list.count() > 0) list.setCurrentRow(row >= 0 && row < list.count() ? row : 0);
+    for (int index = 0; index < static_cast<int>(games.size()); ++index) {
+      const GAME *game = library.getGame(index);
+      if (!QString::fromStdString(game->getName()).contains(query, Qt::CaseInsensitive))
+        continue;
+      auto *item = new QListWidgetItem(QString::fromStdString(games[index]), &list);
+      item->setData(Qt::UserRole, index);
+      if (index == selectedIndex) list.setCurrentItem(item);
+    }
+    if (list.count() > 0 && !list.currentItem()) list.setCurrentRow(0);
     edit.setEnabled(list.count() > 0);
     remove.setEnabled(list.count() > 0);
     hint.setText(list.count() ? "Double-click untuk info, atau pilih game lalu klik Edit."
-                             : "Belum ada game. Tambahkan lewat menu utama.");
+                             : games.empty() ? "Belum ada game. Tambahkan lewat menu utama."
+                                             : "Tidak ada game yang cocok dengan pencarian.");
   };
+  QObject::connect(&search, &QLineEdit::textChanged, [&]() { refresh(); });
 
   auto gameForm = [&](int index) {
     const GAME *game = library.getGame(index);
@@ -244,10 +263,10 @@ int main(int argc, char *argv[]) {
   });
   QObject::connect(&back, &QPushButton::clicked, [&]() { pages.setCurrentIndex(0); });
   QObject::connect(&edit, &QPushButton::clicked, [&]() {
-    if (list.currentRow() >= 0) gameForm(list.currentRow());
+    if (selectedGameIndex() >= 0) gameForm(selectedGameIndex());
   });
   QObject::connect(&list, &QListWidget::itemDoubleClicked, [&]() {
-    const GAME *game = library.getGame(list.currentRow());
+    const GAME *game = library.getGame(selectedGameIndex());
     if (!game) return;
     QDialog dialog(&window);
     dialog.setWindowTitle("Info Game");
@@ -286,7 +305,7 @@ int main(int argc, char *argv[]) {
     dialog.exec();
   });
   QObject::connect(&remove, &QPushButton::clicked, [&]() {
-    int index = list.currentRow();
+    int index = selectedGameIndex();
     if (index < 0) return;
     if (QMessageBox::question(&window, "Delete Game", "Hapus game yang dipilih?") == QMessageBox::Yes) {
       library.deleteGame(index);

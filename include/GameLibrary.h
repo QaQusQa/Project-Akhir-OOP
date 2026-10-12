@@ -1,0 +1,28 @@
+#ifndef GAME_LIBRARY_H
+#define GAME_LIBRARY_H
+
+#include "Game.h"
+#include "Storage.h"
+#include <vector>
+#include <memory>
+
+class GameLibrary {
+  std::vector<std::unique_ptr<GAME>> games;
+  std::unique_ptr<GAME> createGame(launcher platform) const;
+  STORAGE storage;
+
+public:
+GameLibrary();
+  void addGame(const std::string &name, launcher platform,
+               const std::string &launchTarget = "");
+  void editGame(int index, const std::string &name, launcher platform,
+               const std::string &launchTarget = "");
+  void deleteGame(int index);
+  void updateDetails(int index, float price, int rating, std::string description);
+  void calcPlayTime(int index, float hours);
+  void addAchievement(int index, std::string achievement);
+  std::vector<std::string> showGames() const;
+  const GAME *getGame(int index) const;
+};
+
+#endif // GAME_LIBRARY_H

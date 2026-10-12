@@ -2,14 +2,17 @@
 #define GAME_LIBRARY_H
 
 #include "Game.h"
+#include "Storage.h"
 #include <vector>
 #include <memory>
 
 class GameLibrary {
   std::vector<std::unique_ptr<GAME>> games;
   std::unique_ptr<GAME> createGame(launcher platform) const;
+  STORAGE storage;
 
 public:
+GameLibrary();
   void addGame(const std::string &name, launcher platform,
                const std::string &launchTarget = "");
   void editGame(int index, const std::string &name, launcher platform,

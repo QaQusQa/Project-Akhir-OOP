@@ -3,6 +3,10 @@
 
 using namespace std;
 
+GameLibrary::GameLibrary() {
+    storage.loadGames(games);
+}
+
 unique_ptr<GAME> GameLibrary::createGame(launcher platform) const {
   switch (platform) {
   case PC:
@@ -21,6 +25,7 @@ void GameLibrary::addGame(const string &name, launcher platform, const string &l
   game->setName(name);
   if (!launchTarget.empty()) game->setLaunchTarget(launchTarget);
   games.push_back(std::move(game));
+  storage.saveGames(games);
 }
 
 void GameLibrary::editGame(int index, const string &name, launcher platform, const string &launchTarget) {
@@ -33,11 +38,13 @@ void GameLibrary::editGame(int index, const string &name, launcher platform, con
   game->setName(name);
   if (!launchTarget.empty()) game->setLaunchTarget(launchTarget);
   games[index] = std::move(game);
+  storage.saveGames(games);
 }
 
 void GameLibrary::deleteGame(int index) {
   if (index < 0 || index >= static_cast<int>(games.size())) return;
   games.erase(games.begin() + index);
+  storage.saveGames(games);
 }
 
 vector<string> GameLibrary::showGames() const {
@@ -56,14 +63,17 @@ void GameLibrary::updateDetails(int index, float price, int rating, string descr
   updated->setRating(rating);
   updated->setDescription(description);
   static_cast<GAME &>(*games[index]) = *updated;
+  storage.saveGames(games);
 }
 
 void GameLibrary::calcPlayTime(int index, float hours) {
   if (getGame(index)) games[index]->calcPlayTime(hours);
+  storage.saveGames(games);
 }
 
 void GameLibrary::addAchievement(int index, string achievement) {
   if (getGame(index)) games[index]->addAchievement(achievement);
+  storage.saveGames(games);
 }
 
 const GAME *GameLibrary::getGame(int index) const {

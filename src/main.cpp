@@ -1,4 +1,5 @@
 #include "../include/GameLibrary.h"
+#include "../include/Manager.h"
 #include <QFile>
 #include <QApplication>
 #include <stdexcept>
@@ -170,6 +171,12 @@ int main(int argc, char *argv[]) {
 
     QObject::connect(&addTime, &QPushButton::clicked, [&]() {
       float hours = static_cast<float>(extraTime.value());
+
+      if (!MANAGER::verifyPlayTime(hours)) {
+        QMessageBox::information(&dialog, "Waktu",
+                                 "Waktu bermain tidak boleh kosong");
+        return;
+      }
       pending.calcPlayTime(hours);
       totalTime.setText(QString::number(game->getPlayTime() + pending.getPlayTime()) + " jam");
       extraTime.setValue(0);
@@ -177,12 +184,13 @@ int main(int argc, char *argv[]) {
     QObject::connect(&addAchievement, &QPushButton::clicked, [&]() {
       QString text = achievement.text().trimmed();
       auto value = text.toStdString();
-      try {
-        pending.addAchievement(value);
-      } catch (const std::invalid_argument &error) {
-        QMessageBox::information(&dialog, "Achievement", error.what());
-        return;
-      }
+      
+        if (!MANAGER::verifyAchievement(value)) {
+            QMessageBox::information(&dialog, "Achievement", "Achievement tidak boleh kosong");
+            return;
+        }
+      
+      pending.addAchievement(value);
       achievements.addItem(text);
       achievement.clear();
     });
@@ -195,13 +203,23 @@ int main(int argc, char *argv[]) {
         auto gameName = name.text().trimmed().toStdString();
         auto selectedPlatform = static_cast<launcher>(platform.currentIndex());
         // Validasi melalui setter sebelum menyimpan perubahan.
-        PCGAME details;
-        details.setName(gameName);
-        details.setLaunchTarget(launchTarget.text().trimmed().toStdString());
         float cost = static_cast<float>(price.value());
         int score = rating.value();
-        details.setPrice(cost);
-        details.setRating(score);
+        auto target = launchTarget.text().trimmed().toStdString();
+       
+        if (!MANAGER::verifyName(gameName)) {
+            throw std::invalid_argument("Nama game harus diisi");
+        }
+        if (!MANAGER::verifyLaunchTarget(target)) {
+            throw std::invalid_argument("Target launcher/OS/konsol harus diisi");
+        }
+        if (!MANAGER::verifyPrice(cost)) {
+          throw std::invalid_argument("Harga harus nol atau lebih");
+        }
+        if (!MANAGER::verifyRating(score)) {
+          throw std::invalid_argument("Rating harus antara 0 sampai 10");
+        }
+
         if (game) library.editGame(index, gameName, selectedPlatform, launchTarget.text().trimmed().toStdString());
         else {
           index = static_cast<int>(library.showGames().size());
